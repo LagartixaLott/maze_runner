@@ -83,8 +83,9 @@ void print_maze() {
 bool walk(pos_t pos) {
 	system("clear||cls");
 	printf("y:%d x:%d\n",pos.i,pos.j);
-	maze[pos.i][pos.j]='.';
+	maze[pos.i][pos.j]='o';
 	print_maze();
+
 	if(maze==nullptr){
 		return false;
 	}
@@ -177,13 +178,14 @@ bool walk(pos_t pos) {
 		}
 	printf("proximo y: %d, proximo x: %d\n", next_position.i,next_position.j);
 	usleep(100000);
+	maze[pos.i][pos.j]='.';
 	bool a= walk(next_position);
 	return false;
 }
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze2.txt");
+	pos_t initial_pos = load_maze("../data/maze5.txt");
 	// chamar a função de navegação
 	printf("x t :%d y t:%d\n",initial_pos.i,initial_pos.j);
 	bool exit_found = walk(initial_pos);
