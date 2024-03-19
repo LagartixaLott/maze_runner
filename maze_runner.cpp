@@ -89,7 +89,8 @@ bool walk(pos_t pos) {
 		return false;
 	}
 	if(abs(pos.i)>num_rows || abs(pos.j)>num_cols){
-		printf("estourou\n");
+		printf("sem saída\n");
+		return false;
 		pos_t next_position_;
 		if (!valid_positions.empty()) {
 			 next_position_ = valid_positions.top();
@@ -182,7 +183,7 @@ bool walk(pos_t pos) {
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze7.txt");
+	pos_t initial_pos = load_maze("../data/maze2.txt");
 	// chamar a função de navegação
 	printf("x t :%d y t:%d\n",initial_pos.i,initial_pos.j);
 	bool exit_found = walk(initial_pos);
