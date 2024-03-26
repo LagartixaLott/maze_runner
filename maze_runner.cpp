@@ -182,7 +182,7 @@ bool walk(pos_t pos) {
 		// Caso contrario, retornar falso
 		if(caminhos>1){
 			for(int i =0;caminhos-1;i++){
-				thread c1(walk,valid_positions.top());
+				threads_ad.push_back(thread(walk,valid_positions.top()));
 				valid_positions.pop();
 			}
 		}
