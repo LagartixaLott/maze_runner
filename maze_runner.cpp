@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stack>
 #include <stdlib.h>
-#include<unistd.h>      
+#include<unistd.h>    
 #include <thread>
-#include <mutex>
-
+#include <vector>
+#include <mutex>  
+using namespace std;
 // Matriz de char representnado o labirinto
  char** maze; // Voce também pode representar o labirinto como um vetor de vetores de char (vector<vector<char>>)
 
@@ -17,9 +18,8 @@ struct pos_t {
 	int i;
 	int j;
 };
-
-std::stack<std::thread> threads_criadas;
-//contem as threads
+vector<thread> threads_ad;
+//Vetor das threads criadas
 // Estrutura de dados contendo as próximas
 // posicões a serem exploradas no labirinto
 std::stack<pos_t> valid_positions;
@@ -102,7 +102,7 @@ bool walk(pos_t pos) {
 			 next_position_ = valid_positions.top();
 			valid_positions.pop();
 	}
-	printf("proximo x: %d, proximo y: %d\n", next_position_.i,next_position_.j);
+	//printf("proximo x: %d, proximo y: %d\n", next_position_.i,next_position_.j);
 	//bool a= walk(next_position_);
 	}
 	pos_t next_position;
@@ -118,7 +118,7 @@ bool walk(pos_t pos) {
 			aux_pos.i=pos.i+1;
 			aux_pos.j=pos.j;
 			valid_positions.push(aux_pos);
-			caminhos = caminhos + 1;
+			caminhos++;
 		}
 		if(maze[pos.i+1][pos.j]=='s'){
 			return true;
@@ -131,7 +131,7 @@ bool walk(pos_t pos) {
 			aux_pos.i=pos.i-1;
 			aux_pos.j=pos.j;
 			valid_positions.push(aux_pos);
-			caminhos = caminhos + 1;
+			caminhos++;
 		}
 		if(maze[pos.i-1][pos.j]=='s'){
 			return true;
@@ -144,7 +144,7 @@ bool walk(pos_t pos) {
 			aux_pos.i=pos.i;
 			aux_pos.j=pos.j+1;
 			valid_positions.push(aux_pos);
-			caminhos = caminhos + 1;
+			caminhos++;
 		}
 		if(maze[pos.i][pos.j+1]=='s'){
 			return true;
@@ -157,7 +157,7 @@ bool walk(pos_t pos) {
 			aux_pos.i=pos.i;
 			aux_pos.j=pos.j-1;
 			valid_positions.push(aux_pos);
-			caminhos = caminhos + 1;
+			caminhos++;
 		}
 		if(maze[pos.i][pos.j-1]=='s'){
 			return true;
@@ -180,44 +180,35 @@ bool walk(pos_t pos) {
 		// Verifica se a pilha de posições nao esta vazia 
 		//Caso não esteja, pegar o primeiro valor de  valid_positions, remove-lo e chamar a funçao walk com esse valor
 		// Caso contrario, retornar falso
-		//Caso um caminho não obtenha saída, ele espera os demais
-		if(caminhos == 0){
-		std::stack<std::thread> threads_aux = threads_criadas;
-		for(int i = 1;threads_criadas.size();i++)
-			threads_aux.top().join();
-			threads_aux.pop();
+		if(caminhos>1){
+			for(int i =0;caminhos-1;i++){
+				thread c1(walk,valid_positions.top());
+				valid_positions.pop();
+			}
 		}
-		if(caminhos == 1){
+		if(threads_ad.size()>0){
+		for (int i=0; i < threads_ad.size()-1; ++i){
+		threads_ad[i].join();
+	    }
+		}
 		if (!valid_positions.empty()) {
-		usleep(100000);
-	    maze[pos.i][pos.j]='.';
-		next_position = valid_positions.top();
-		valid_positions.pop();
-		walk(next_position);
-		}
-		}
-		if(caminhos > 1){
-		for(int i = 1;caminhos-1;i++){
-		std::thread c1(walk,valid_positions.top());
-		threads_criadas.push(c1);
-		valid_positions.pop();
-		}
-		usleep(100000);
-	    maze[pos.i][pos.j]='.';
-		next_position = valid_positions.top();
-		valid_positions.pop();
-		walk(next_position);
+			next_position = valid_positions.top();
+			valid_positions.pop();
+			usleep(100000);
+	        maze[pos.i][pos.j]='.';
+	        bool a= walk(next_position);
 		}
 	//printf("proximo y: %d, proximo x: %d\n", next_position.i,next_position.j);
 	//usleep(100000);
 	//maze[pos.i][pos.j]='.';
 	//bool a= walk(next_position);
+
 	return false;
 }
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze5.txt");
+	pos_t initial_pos = load_maze("../data/maze2.txt");
 	// chamar a função de navegação
 	printf("x t :%d y t:%d\n",initial_pos.i,initial_pos.j);
 	bool exit_found = walk(initial_pos);
