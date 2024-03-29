@@ -205,7 +205,7 @@ bool walk(pos_t pos) {
 		if (!valid_positions.empty()) {
 			next_position = valid_positions.top();
 			valid_positions.pop();
-			usleep(100000);
+			usleep(200000);
 	        maze[pos.i][pos.j]='.';
 	        bool a= walk(next_position);
 		}
