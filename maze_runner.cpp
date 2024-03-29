@@ -13,6 +13,7 @@ using namespace std;
 int num_rows;
 int num_cols;
 
+mutex m;
 // Representação de uma posição
 struct pos_t {
 	int i;
@@ -88,9 +89,11 @@ void print_maze() {
 // Recebe como entrada a posição initial e retorna um booleando indicando se a saída foi encontrada
 bool walk(pos_t pos) {
 	int caminhos=0;
+	m.lock();
+	maze[pos.i][pos.j]='o';
+	m.unlock();
 	system("clear||cls");
 	printf("y:%d x:%d\n",pos.i,pos.j);
-	maze[pos.i][pos.j]='o';
 	print_maze();
 
 	if(maze==nullptr){
@@ -112,9 +115,8 @@ bool walk(pos_t pos) {
 		// Marcar a posição atual com o símbolo '.'
 		// Limpa a tela
 		// Imprime o labirinto
-		
 		if(abs(pos.i)<num_rows-1){
-			printf("baixo: %c\n",maze[pos.i+1][pos.j]);
+		printf("baixo: %c\n",maze[pos.i+1][pos.j]);
 		if(maze[pos.i+1][pos.j]=='x'){
 			pos_t aux_pos;
 			aux_pos.i=pos.i+1;
@@ -127,7 +129,7 @@ bool walk(pos_t pos) {
 		}
 		}
 		if(abs(pos.i)>0){
-			printf("cima: %c\n",maze[pos.i-1][pos.j]);
+		printf("cima: %c\n",maze[pos.i-1][pos.j]);
 		if(maze[pos.i-1][pos.j]=='x'){
 			pos_t aux_pos;
 			aux_pos.i=pos.i-1;
@@ -140,7 +142,7 @@ bool walk(pos_t pos) {
 		}
 		}
 		if(abs(pos.j)<num_cols-1){
-			printf("direita: %c\n",maze[pos.i][pos.j+1]);
+		printf("direita: %c\n",maze[pos.i][pos.j+1]);
 		if(maze[pos.i][pos.j+1]=='x'){
 			pos_t aux_pos;
 			aux_pos.i=pos.i;
@@ -165,7 +167,6 @@ bool walk(pos_t pos) {
 			return true;
 		}
 		}
-		
 		/* Dado a posição atual, verifica quais sao as próximas posições válidas
 			Checar se as posições abaixo são validas (i>0, i<num_rows, j>0, j <num_cols)
 		 	e se são posições ainda não visitadas (ou seja, caracter 'x') e inserir
@@ -195,25 +196,25 @@ bool walk(pos_t pos) {
 		if(caminhos==0){
 		if(threads_ad.size()>0){
 		printf("entrou no loop dos join()\n");
-		 for (auto& thread : threads_ad) {
+		for (auto& thread : threads_ad) {
         thread.join();
     	}
-
 		}
 		return true;
 		}
 		if (!valid_positions.empty()) {
 			next_position = valid_positions.top();
 			valid_positions.pop();
-			usleep(200000);
+			usleep(100000);
 	        maze[pos.i][pos.j]='.';
 	        bool a= walk(next_position);
+			
 		}
 	//printf("proximo y: %d, proximo x: %d\n", next_position.i,next_position.j);
 	//usleep(100000);
 	//maze[pos.i][pos.j]='.';
 	//bool a= walk(next_position);
-
+	
 	return false;
 }
 
