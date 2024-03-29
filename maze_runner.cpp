@@ -22,7 +22,6 @@ vector<thread> threads_ad;
 //Vetor das threads criadas
 vector<pos_t> posicoes;
 //Vetor das posições iniciais, pras threads poderem acessar
-
 // Estrutura de dados contendo as próximas
 // posicões a serem exploradas no labirinto
 std::stack<pos_t> valid_positions;
@@ -184,20 +183,24 @@ bool walk(pos_t pos) {
 		//Caso não esteja, pegar o primeiro valor de  valid_positions, remove-lo e chamar a funçao walk com esse valor
 		// Caso contrario, retornar falso
 		if(caminhos>1){
-			for(int p =1;caminhos-1;p++){
+			for(int p =1;p<=caminhos-1;p++){
 				printf("%d caminhos\n ",caminhos);
 				printf("entrou no loop das threads\n");
 				pos_t aux= valid_positions.top();
 				posicoes.push_back(aux);
-				threads_ad.push_back(thread(walk,posicoes[0]));
+				threads_ad.push_back(thread(walk,posicoes[posicoes.size()-1]));
 				valid_positions.pop();
 			}
 		}
+		if(caminhos==0){
 		if(threads_ad.size()>0){
-			printf("entrou no loop dos join()\n");
-		for (int i=0; i < threads_ad.size()-1; ++i){
-		threads_ad[i].join();
-	    }
+		printf("entrou no loop dos join()\n");
+		 for (auto& thread : threads_ad) {
+        thread.join();
+    	}
+
+		}
+		return true;
 		}
 		if (!valid_positions.empty()) {
 			next_position = valid_positions.top();
