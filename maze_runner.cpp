@@ -91,14 +91,9 @@ bool walk(pos_t pos) {
 	// Repita até que a saída seja encontrada ou não existam mais posições não exploradas
 	// Marcar a posição atual com o símbolo '.'
 	int caminhos=0;
-	m.lock();
-	maze[pos.i][pos.j]='o';
-	m.unlock();
 	// Limpa a tela
-	system("clear||cls");
+	//system("clear||cls");
 	printf("y:%d x:%d\n",pos.i,pos.j);
-	// Imprime o labirinto
-	print_maze();
 	if(maze==nullptr){
 		return false;
 	}
@@ -118,7 +113,9 @@ bool walk(pos_t pos) {
 		 		- pos.i-1, pos.j
 		 	Caso alguma das posiçÕes validas seja igual a 's', retornar verdadeiro
 	 	*/
-
+	 m.lock();
+	 // Imprime o labirinto
+	print_maze();
 	//Testar embaixo
 		if(abs(pos.i)<num_rows-1){
 		printf("baixo: %c\n",maze[pos.i+1][pos.j]);
@@ -178,13 +175,13 @@ bool walk(pos_t pos) {
 		// Caso haja mais de um caminho disponível, criar threads para caminhos-1 e seguir pelo caminho restante
 		if(caminhos>1){
 			for(int p =1;p<=caminhos-1;p++){
-				printf("%d caminhos\n ",caminhos);
-				printf("entrou no loop das threads\n");
 				pos_t aux= valid_positions.top();
 				posicoes.push_back(aux);
+				maze[aux.i][aux.j]='o';
 				threads_ad.push_back(thread(walk,posicoes[posicoes.size()-1]));
 				valid_positions.pop();
 			}
+			m.unlock();
 		}
 		// Caso uma thread chegue a um ponto sem saída, ela deve esperar as demais
 		if(caminhos==0){
@@ -202,6 +199,9 @@ bool walk(pos_t pos) {
 			valid_positions.pop();
 			usleep(100000);
 	        maze[pos.i][pos.j]='.';
+			maze[next_position.i][next_position.j]='o';
+			m.unlock();
+			printf("chamou a próxima");
 	        bool a= walk(next_position);
 		}
 	return false;
