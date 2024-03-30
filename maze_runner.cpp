@@ -12,17 +12,17 @@ using namespace std;
 // Numero de linhas e colunas do labirinto
 int num_rows;
 int num_cols;
-
+// Bloqueio 
 mutex m;
 // Representação de uma posição
 struct pos_t {
 	int i;
 	int j;
 };
-vector<thread> threads_ad;
 //Vetor das threads criadas
-vector<pos_t> posicoes;
+vector<thread> threads_ad;
 //Vetor das posições iniciais, pras threads poderem acessar
+vector<pos_t> posicoes;
 // Estrutura de dados contendo as próximas
 // posicões a serem exploradas no labirinto
 std::stack<pos_t> valid_positions;
@@ -88,33 +88,38 @@ void print_maze() {
 // Função responsável pela navegação.
 // Recebe como entrada a posição initial e retorna um booleando indicando se a saída foi encontrada
 bool walk(pos_t pos) {
+	// Repita até que a saída seja encontrada ou não existam mais posições não exploradas
+	// Marcar a posição atual com o símbolo '.'
 	int caminhos=0;
 	m.lock();
 	maze[pos.i][pos.j]='o';
 	m.unlock();
+	// Limpa a tela
 	system("clear||cls");
 	printf("y:%d x:%d\n",pos.i,pos.j);
+	// Imprime o labirinto
 	print_maze();
-
 	if(maze==nullptr){
 		return false;
 	}
 	if(abs(pos.i)>num_rows || abs(pos.j)>num_cols){
 		printf("sem saída\n");
 		return false;
-		pos_t next_position_;
-		if (!valid_positions.empty()) {
-			 next_position_ = valid_positions.top();
-			valid_positions.pop();
-	}
-	//printf("proximo x: %d, proximo y: %d\n", next_position_.i,next_position_.j);
-	//bool a= walk(next_position_);
 	}
 	pos_t next_position;
-	// Repita até que a saída seja encontrada ou não existam mais posições não exploradas
-		// Marcar a posição atual com o símbolo '.'
-		// Limpa a tela
-		// Imprime o labirinto
+	//Testar as posições adjacentes e ver possíveis direções
+			/* Dado a posição atual, verifica quais sao as próximas posições válidas
+			Checar se as posições abaixo são validas (i>0, i<num_rows, j>0, j <num_cols)
+		 	e se são posições ainda não visitadas (ou seja, caracter 'x') e inserir
+		 	cada uma delas no vetor valid_positions
+		 		- pos.i, pos.j+1
+		 		- pos.i, pos.j-1
+		 		- pos.i+1, pos.j
+		 		- pos.i-1, pos.j
+		 	Caso alguma das posiçÕes validas seja igual a 's', retornar verdadeiro
+	 	*/
+
+	//Testar embaixo
 		if(abs(pos.i)<num_rows-1){
 		printf("baixo: %c\n",maze[pos.i+1][pos.j]);
 		if(maze[pos.i+1][pos.j]=='x'){
@@ -128,6 +133,7 @@ bool walk(pos_t pos) {
 			return true;
 		}
 		}
+		//Testar encima
 		if(abs(pos.i)>0){
 		printf("cima: %c\n",maze[pos.i-1][pos.j]);
 		if(maze[pos.i-1][pos.j]=='x'){
@@ -141,6 +147,7 @@ bool walk(pos_t pos) {
 			return true;
 		}
 		}
+		//Testar na direita
 		if(abs(pos.j)<num_cols-1){
 		printf("direita: %c\n",maze[pos.i][pos.j+1]);
 		if(maze[pos.i][pos.j+1]=='x'){
@@ -154,6 +161,7 @@ bool walk(pos_t pos) {
 			return true;
 		}
 		}
+		//Testar na esquerda
 		if(abs(pos.j)>0){
 			printf("esquerda: %c\n",maze[pos.i][pos.j-1]);
 		if(maze[pos.i][pos.j-1]=='x'){
@@ -167,22 +175,7 @@ bool walk(pos_t pos) {
 			return true;
 		}
 		}
-		/* Dado a posição atual, verifica quais sao as próximas posições válidas
-			Checar se as posições abaixo são validas (i>0, i<num_rows, j>0, j <num_cols)
-		 	e se são posições ainda não visitadas (ou seja, caracter 'x') e inserir
-		 	cada uma delas no vetor valid_positions
-		 		- pos.i, pos.j+1
-		 		- pos.i, pos.j-1
-		 		- pos.i+1, pos.j
-		 		- pos.i-1, pos.j
-		 	Caso alguma das posiçÕes validas seja igual a 's', retornar verdadeiro
-	 	*/
-
-		
-	
-		// Verifica se a pilha de posições nao esta vazia 
-		//Caso não esteja, pegar o primeiro valor de  valid_positions, remove-lo e chamar a funçao walk com esse valor
-		// Caso contrario, retornar falso
+		// Caso haja mais de um caminho disponível, criar threads para caminhos-1 e seguir pelo caminho restante
 		if(caminhos>1){
 			for(int p =1;p<=caminhos-1;p++){
 				printf("%d caminhos\n ",caminhos);
@@ -193,28 +186,24 @@ bool walk(pos_t pos) {
 				valid_positions.pop();
 			}
 		}
+		// Caso uma thread chegue a um ponto sem saída, ela deve esperar as demais
 		if(caminhos==0){
-		if(threads_ad.size()>0){
-		printf("entrou no loop dos join()\n");
-		for (auto& thread : threads_ad) {
-        thread.join();
-    	}
-		}
+		 if(threads_ad.size()>0){
+		  printf("entrou no loop dos join()\n");
+		  for (auto& thread : threads_ad) {
+            thread.join();
+    	  }
+	     }
 		return true;
 		}
+		// Caso ainda haja caminhos a seguir, a thread deve chamar um walk() para a próxima posição
 		if (!valid_positions.empty()) {
 			next_position = valid_positions.top();
 			valid_positions.pop();
 			usleep(100000);
 	        maze[pos.i][pos.j]='.';
 	        bool a= walk(next_position);
-			
 		}
-	//printf("proximo y: %d, proximo x: %d\n", next_position.i,next_position.j);
-	//usleep(100000);
-	//maze[pos.i][pos.j]='.';
-	//bool a= walk(next_position);
-	
 	return false;
 }
 
