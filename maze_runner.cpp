@@ -90,6 +90,7 @@ void print_maze() {
 bool walk(pos_t pos) {
 	// Repita até que a saída seja encontrada ou não existam mais posições não exploradas
 	// Marcar a posição atual com o símbolo '.'
+	int caminhos =0;
 	vector<thread> threads_ad;
 	printf("y:%d x:%d\n",pos.i,pos.j);
 	if(maze==nullptr){
@@ -111,6 +112,7 @@ bool walk(pos_t pos) {
 		if(abs(pos.i)<num_rows-1){
 		printf("baixo: %c\n",maze[pos.i+1][pos.j]);
 		if(maze[pos.i+1][pos.j]=='x'){
+			caminhos++;
 			pos_t aux_pos;
 			aux_pos.i=pos.i+1;
 			aux_pos.j=pos.j;
@@ -120,6 +122,8 @@ bool walk(pos_t pos) {
 			threads_ad.push_back(thread(walk,aux_pos));
 		}
 		if(maze[pos.i+1][pos.j]=='s'){
+			print_maze();
+			m.unlock();
 			return true;
 		}
 		}
@@ -127,6 +131,7 @@ bool walk(pos_t pos) {
 		if(abs(pos.i)>0){
 		printf("cima: %c\n",maze[pos.i-1][pos.j]);
 		if(maze[pos.i-1][pos.j]=='x'){
+			caminhos++;
 			pos_t aux_pos;
 			aux_pos.i=pos.i-1;
 			aux_pos.j=pos.j;
@@ -136,14 +141,17 @@ bool walk(pos_t pos) {
 			threads_ad.push_back(thread(walk,aux_pos));
 		}
 		if(maze[pos.i-1][pos.j]=='s'){
+			print_maze();
+			m.unlock();
 			return true;
-			 print_maze();
+			
 		}
 		}
 		//Testar na direita
 		if(abs(pos.j)<num_cols-1){
 		printf("direita: %c\n",maze[pos.i][pos.j+1]);
 		if(maze[pos.i][pos.j+1]=='x'){
+			caminhos++;
 			pos_t aux_pos;
 			aux_pos.i=pos.i;
 			aux_pos.j=pos.j+1;
@@ -153,14 +161,17 @@ bool walk(pos_t pos) {
 			threads_ad.push_back(thread(walk,aux_pos));
 		}
 		if(maze[pos.i][pos.j+1]=='s'){
-			return true;
 			print_maze();
+			m.unlock();
+			return true;
+			
 		}
 		}
 		//Testar na esquerda
 		if(abs(pos.j)>0){
 			printf("esquerda: %c\n",maze[pos.i][pos.j-1]);
 		if(maze[pos.i][pos.j-1]=='x'){
+			caminhos++;
 			pos_t aux_pos;
 			aux_pos.i=pos.i;
 			aux_pos.j=pos.j-1;
@@ -170,13 +181,15 @@ bool walk(pos_t pos) {
 			threads_ad.push_back(thread(walk,aux_pos));
 		}
 		if(maze[pos.i][pos.j-1]=='s'){
+			print_maze();
+			m.unlock();
 			return true;
-			 print_maze();
+			
 
 		}
 		}
 		m.unlock();
-		 if(threads_ad.size()>0){
+		 if(caminhos>0){
 		  for (auto& thread : threads_ad) {
             thread.join();
     	  }
@@ -187,7 +200,7 @@ bool walk(pos_t pos) {
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze2.txt");
+	pos_t initial_pos = load_maze("../data/maze6.txt");
 	// chamar a função de navegação
 	printf("x t :%d y t:%d\n",initial_pos.i,initial_pos.j);
 	bool exit_found = walk(initial_pos);
