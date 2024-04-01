@@ -187,7 +187,7 @@ bool walk(pos_t pos) {
 
 int main(int argc, char* argv[]) {
 	// carregar o labirinto com o nome do arquivo recebido como argumento
-	pos_t initial_pos = load_maze("../data/maze3.txt");
+	pos_t initial_pos = load_maze("../data/maze2.txt");
 	// chamar a função de navegação
 	printf("x t :%d y t:%d\n",initial_pos.i,initial_pos.j);
 	bool exit_found = walk(initial_pos);
